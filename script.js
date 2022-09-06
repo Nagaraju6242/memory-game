@@ -3,6 +3,8 @@ const n = 8;
 var lastPokemon = "";
 var lastCard = null;
 var correctCount = 0;
+var startTime = null;
+var interval = null;
 
 var confettiSettings = {
 	target: "my-confetti",
@@ -26,6 +28,16 @@ var confettiSettings = {
 
 function randomHSL() {
 	return `hsla(${~~(360 * Math.random())},90%,60%,1)`;
+}
+
+function getTime(time) {
+	var mins = Math.floor(time / 60000)
+		.toString()
+		.padStart(2, "0");
+	var secs = Math.floor((time % 60000) / 1000)
+		.toString()
+		.padStart(2, "0");
+	return mins + ":" + secs;
 }
 
 async function getPokemonNames(n) {
@@ -55,6 +67,13 @@ async function getPokemonsData(n) {
 	});
 }
 
+function updateTime() {
+	var time = new Date() - startTime;
+	var timeText = getTime(time);
+	timerElements = timeText.split("").map((ele) => "<span>" + ele + "</span>");
+	$(".timer").html(timerElements);
+}
+
 const shuffleArr = (arr) => {
 	var length = arr.length;
 	for (i = 0; i < length; i++) {
@@ -75,6 +94,16 @@ const startOrReset = () => {
 	$(".reset-button").removeClass("start");
 	$(".loading").fadeIn();
 	correctCount = 0;
+	lastPokemon = "";
+	lastCard = null;
+	startTime = new Date();
+	var recordTime = localStorage.getItem("recordTime");
+	if (recordTime) {
+		$("#highscore").text(getTime(recordTime));
+	} else {
+		$("#highscore").text("--:--");
+	}
+
 	$(".canvas-holder").hide();
 	getPokemonsData(n).then((data) => {
 		console.log(data);
@@ -90,6 +119,7 @@ const startOrReset = () => {
 			card.appendTo(".cards");
 		}
 		$(".loading").fadeOut();
+		interval = setInterval(updateTime, 1000);
 	});
 };
 
@@ -99,6 +129,20 @@ const wonGame = () => {
 	confetti.render();
 	$(".reset-button").text("Start New Game");
 	$(".reset-button").addClass("start");
+	clearInterval(interval);
+	timeTaken = new Date() - startTime;
+	var recordTime = localStorage.getItem("recordTime");
+	if (recordTime) {
+		if (timeTaken < recordTime) {
+			localStorage.setItem("recordTime", timeTaken);
+			$("#highscore").text(getTime(timeTaken));
+		} else {
+			$("#highscore").text(getTime(recordTime));
+		}
+	} else {
+		localStorage.setItem("recordTime", timeTaken);
+		$("#highscore").text(getTime(timeTaken));
+	}
 };
 
 const cardClicked = (e) => {
@@ -118,7 +162,7 @@ const cardClicked = (e) => {
 		lastPokemon = "";
 		correctCount++;
 		if (correctCount == n) {
-			wonGame();
+			setTimeout(wonGame, 1000);
 		}
 		return;
 	} else {

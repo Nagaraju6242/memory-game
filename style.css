@@ -154,3 +154,28 @@ h1 {
 	left: 50%;
 	transform: translate(-50%, -50%);
 }
+
+.timer {
+	position: fixed;
+	top: 2rem;
+	right: 2rem;
+	overflow: hidden;
+	line-height: 1.25;
+}
+
+.highscore {
+	position: fixed;
+	top: 2rem;
+	left: 2rem;
+	overflow: hidden;
+	line-height: 1.25;
+}
+
+.timer span {
+	display: inline-block;
+	transition: transform 0.25s ease;
+}
+
+.timer span.done {
+	transform: translateY(-105%);
+}
